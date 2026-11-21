@@ -103,7 +103,8 @@ function renderVerbStudy() {
     '</strong><p lang="en">'+html(verb.past)+'</p></div>'+
     '<div class="box"><strong>过去分词</strong><p lang="en">'+html(verb.participle||"—")+'</p></div></div>'+
     '<p>'+html(verb.zh)+(note?' · '+html(note):'')+'</p></details>'+
-    verbNavigation("data-direction",verbIndex,list.length-1,["上一词","下一词"]);
+    verbNavigation("data-direction",verbIndex,list.length-1,["上一词","下一词"])+
+    '<p class="muted">按空格键，切换下一词。</p>';
 }
 
 function moveVerb(delta) {

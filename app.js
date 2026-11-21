@@ -174,7 +174,8 @@ function renderStudy() {
     (word.alt ? '<details class="answer"><summary>查看同义词或替换表达</summary><p class="muted">'+html(word.altKind||"同义或近义表达")+'</p><p class="en" lang="en">'+html(word.alt)+'</p><p class="muted">结合释义和例句选用表达，必要时调整句子结构。</p></details>':'')+
     (word.appendix?'<p class="muted">教材词表 p.'+word.appendix+'</p>':'')+'</div>'+
     '<div class="actions page-nav"><button type="button" data-direction="-1" '+(wordIndex===0?'disabled':'')+'>上一词</button>'+
-    '<button class="primary" type="button" data-direction="1" '+(wordIndex===words.length-1?'disabled':'')+'>下一词</button></div>';
+    '<button class="primary" type="button" data-direction="1" '+(wordIndex===words.length-1?'disabled':'')+'>下一词</button></div>'+
+    '<p class="muted">按空格键，切换下一词。</p>';
 }
 
 function renderPractice() {
@@ -284,14 +285,21 @@ document.addEventListener("click", event => {
   if (data.page) { practicePage += Number(data.page);renderPractice(); }
 });
 document.addEventListener("keydown", event => {
-  if (currentMode !== "study" || event.target.closest("button,input,select,summary,a")) return;
-  if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-    event.preventDefault();
-    player?.pause();
-    const direction = event.key === "ArrowRight" ? 1 : -1;
-    if (currentBank === "verbs") moveVerb(direction);
-    else { wordIndex += direction;renderStudy(); }
-  }
+  if (currentMode !== "study" || event.defaultPrevented || event.isComposing ||
+      event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.target.closest("input,textarea,select,summary,a,[contenteditable]:not([contenteditable='false'])")) return;
+  const button = event.target.closest("button");
+  if (button && !get("study").contains(button)) return;
+  const isSpace = event.code === "Space" || event.key === " ";
+  if (!isSpace && event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+  event.preventDefault();
+  if (isSpace && event.repeat) return;
+  const direction = event.key === "ArrowLeft" ? -1 : 1;
+  const navigation = get("study").querySelector('[data-direction="'+direction+'"]');
+  if (!navigation || navigation.disabled) return;
+  player?.pause();
+  if (currentBank === "verbs") moveVerb(direction);
+  else { wordIndex += direction;renderStudy(); }
 });
 syncCatalog();
 renderLibrary();
